@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乙巳马年 · 毛孩子名分演算中心</title>
+    <style>
+        :root {
+            --cny-red: #d62828;
+            --cny-gold: #f4a261;
+            --warm-bg: #fffcf2;
+            --text-main: #3d405b;
+            --soft-white: #ffffff;
+            --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--warm-bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Decoration */
+        .emoji-rain {
+            position: fixed;
+            top: -50px;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1;
+            font-size: 24px;
+            animation: fall linear forwards;
+            opacity: 0.5;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* App Container */
+        .app-card {
+            width: 90%;
+            max-width: 550px;
+            background: var(--soft-white);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(214, 40, 40, 0.08);
+            z-index: 10;
+            position: relative;
+            border: 1px solid rgba(214, 40, 40, 0.05);
+            transition: var(--transition);
+        }
+
+        .view { display: none; }
+        .view.active { display: flex; flex-direction: column; }
+
+        /* Intro View */
+        #intro-view { text-align: center; gap: 20px; }
+        .horse-icon { font-size: 3.5rem; margin-bottom: 10px; display: block; }
+        h1 { color: var(--cny-red); font-size: 1.6rem; letter-spacing: 2px; }
+        .intro-text { line-height: 1.8; color: #666; font-size: 0.95rem; margin-bottom: 20px; }
+        
+        .pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .pick-btn {
+            background: #fff; border: 2px solid #f8f8f8; border-radius: 16px;
+            padding: 15px; cursor: pointer; transition: var(--transition);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .pick-btn:hover { border-color: var(--cny-red); transform: translateY(-5px); background: #fffaf0; }
+        .pick-btn span { font-size: 2rem; margin-bottom: 8px; }
+        .pick-btn label { font-weight: bold; color: var(--text-main); cursor: pointer; font-size: 0.9rem; }
+
+        /* Calculator View */
+        .calc-header { font-size: 0.9rem; color: #888; margin-bottom: 10px; text-align: center; }
+        .display-window {
+            min-height: 100px; background: #fdf8f5; border-radius: 16px;
+            padding: 20px; margin-bottom: 25px; display: flex; flex-wrap: wrap;
+            align-content: center; justify-content: center; gap: 6px;
+            border: 1px dashed var(--cny-gold);
+        }
+        .subject-tag { color: var(--cny-red); font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
+        .node-pill {
+            background: var(--cny-red); color: #fff; padding: 4px 12px;
+            font-size: 0.85rem; border-radius: 100px; animation: pop 0.4s ease;
+        }
+        .connector { color: var(--cny-red); font-weight: bold; font-size: 0.8rem; opacity: 0.4; }
+
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
+        .node-btn {
+            background: #fff; border: 1px solid #f0f0f0; padding: 12px 0;
+            border-radius: 12px; font-size: 0.85rem; cursor: pointer; transition: var(--transition);
+        }
+        .node-btn:hover { border-color: var(--cny-red); color: var(--cny-red); background: #fff5f5; }
+
+        .btn-primary {
+            background: var(--cny-red); color: white; border: none; padding: 16px;
+            border-radius: 14px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(214, 40, 40, 0.15); transition: var(--transition);
+        }
+        .btn-primary:hover { letter-spacing: 2px; filter: brightness(1.1); }
+        .btn-secondary { background: none; border: 1px solid #ddd; border-radius: 14px; cursor: pointer; color: #888; flex: 1; }
+
+        /* Result View */
+        #result-view { text-align: center; }
+        .res-label { font-size: 0.85rem; color: #999; margin-bottom: 15px; }
+        .res-chain-preview { font-size: 0.9rem; color: var(--cny-gold); margin-bottom: 25px; font-style: italic; }
+        .res-main { font-size: 1.8rem; color: var(--cny-red); font-weight: bold; margin-bottom: 30px; line-height: 1.4; }
+        .res-bless { font-size: 0.95rem; line-height: 1.8; color: #666; padding: 25px; background: #fff9f9; border-radius: 12px; margin-bottom: 30px; }
+        .warm-footer { font-size: 0.85rem; color: #aaa; margin-bottom: 20px; font-style: italic; line-height: 1.6; }
+
+        /* Glitch State */
+        .glitch-active { animation: jitter 0.05s infinite; filter: contrast(1.5) invert(0.1); }
+        @keyframes jitter { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, -1px); } }
+        #warning-overlay {
+            position: fixed; inset: 0; z-index: 1000; background: rgba(214, 40, 40, 0.98);
+            display: none; align-items: center; justify-content: center; color: white;
+            font-size: 4rem; font-weight: 900; text-align: center; padding: 20px;
+        }
+
+        @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="warning-overlay">你踏马干啥呢？</div>
+
+    <div class="app-card">
+        <!-- 1. Intro View -->
+        <div id="intro-view" class="view active">
+            <span class="horse-icon">🐎</span>
+            <h1>马年毛孩子名分演算</h1>
+            <p class="intro-text">
+                在这个奔腾的乙巳年，<br>
+                让我们为家里的毛茸茸、羽灵灵成员演算一个新春名分。<br>
+                请先选择主角：
+            </p>
+            <div class="pick-grid">
+                <div class="pick-btn" onclick="startCalc('猫猫', '🐱')">
+                    <span>🐱</span><label>猫猫</label>
+                </div>
+                <div class="pick-btn" onclick="startCalc('狗狗', '🐶')">
+                    <span>🐶</span><label>狗狗</label>
+                </div>
+                <div class="pick-btn" onclick="startCalc('鼠鼠', '🐹')">
+                    <span>🐹</span><label>鼠鼠</label>
+                </div>
+                <div class="pick-btn" onclick="startCalc('小鸟', '🐦')">
+                    <span>🐦</span><label>小鸟</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Calculator View -->
+        <div id="calc-view" class="view">
+            <div class="calc-header">定义它在家庭中的位置</div>
+            <div class="display-window" id="node-display"></div>
+            <div class="btn-grid">
+                <button class="node-btn" onclick="add('爷爷')">爷爷</button>
+                <button class="node-btn" onclick="add('奶奶')">奶奶</button>
+                <button class="node-btn" onclick="add('外公')">外公</button>
+                <button class="node-btn" onclick="add('外婆')">外婆</button>
+                <button class="node-btn" onclick="add('父亲')">父亲</button>
+                <button class="node-btn" onclick="add('母亲')">母亲</button>
+                <button class="node-btn" onclick="add('儿子')">儿子</button>
+                <button class="node-btn" onclick="add('女儿')">女儿</button>
+                <button class="node-btn" onclick="add('哥哥')">哥哥</button>
+                <button class="node-btn" onclick="add('姐姐')">姐姐</button>
+                <button class="node-btn" onclick="add('弟弟')">弟弟</button>
+                <button class="node-btn" onclick="add('妹妹')">妹妹</button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" style="flex: 2;" onclick="runCalc()">概括名分</button>
+                <button class="btn-secondary" onclick="reset()">清空</button>
+            </div>
+        </div>
+
+        <!-- 3. Result View -->
+        <div id="result-view" class="view">
+            <div class="res-label">根据演算，这位特殊的成员是：</div>
+            <div class="res-chain-preview" id="final-chain"></div>
+            <div class="res-main" id="target-id"></div>
+            <div class="res-bless" id="target-bless"></div>
+            <p class="warm-footer">名分虽由算法概括，<br>但它看向你时的眼神，永远是唯一的真实。</p>
+            <button class="btn-primary" onclick="backToStart()">新的一年，请多关照</button>
+        </div>
+    </div>
+
+    <script>
+        let chain = [];
+        let subject = '';
+        let subjectEmoji = '';
+        const LIMIT = 6;
+        const emojis = ['🐎', '🧧', '✨', '🐾', '🌾', '🐎', '🧨'];
+
+        function createRain() {
+            const e = document.createElement('div');
+            e.className = 'emoji-rain';
+            e.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+            e.style.left = Math.random()*100 + 'vw';
+            const dur = Math.random()*3 + 4;
+            e.style.animationDuration = dur + 's';
+            document.body.appendChild(e);
+            setTimeout(()=>e.remove(), dur*1000);
+        }
+        setInterval(createRain, 500);
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId + '-view').classList.add('active');
+        }
+
+        function startCalc(type, emoji) {
+            subject = type;
+            subjectEmoji = emoji;
+            chain = [];
+            render();
+            showView('calc');
+        }
+
+        function add(val) {
+            if (chain.length >= LIMIT) {
+                const overlay = document.getElementById('warning-overlay');
+                document.body.classList.add('glitch-active');
+                overlay.style.display = 'flex';
+                setTimeout(() => {
+                    document.body.classList.remove('glitch-active');
+                    overlay.style.display = 'none';
+                    reset();
+                }, 1200);
+                return;
+            }
+            chain.push(val);
+            render();
+        }
+
+        function render() {
+            const d = document.getElementById('node-display');
+            if (chain.length === 0) {
+                d.innerHTML = `<span class="subject-tag">${subjectEmoji} ${subject}</span> <span style="color: #ccc;">它是我的...</span>`;
+                return;
+            }
+            let html = `<span class="subject-tag">${subjectEmoji} ${subject}</span> <span class="connector">是</span> `;
+            html += chain.map((n, i) => 
+                `<span class="node-pill">${n}</span>${i < chain.length - 1 ? '<span class="connector">的</span>' : ''}`
+            ).join('');
+            d.innerHTML = html;
+        }
+
+        function reset() {
+            chain = [];
+            render();
+        }
+
+        function backToStart() {
+            showView('intro');
+        }
+
+        const abstractOutcomes = {
+            '猫猫': [
+                "一位拒绝承认地心引力的【高维猫科长辈】",
+                "在草原迷宫中守护你发际线的【肉垫祭司】",
+                "由于血脉跨度过大而坍缩成的【胡须观测员】",
+                "乙巳年间唯一有权在全家福里【公然打盹的领袖】",
+                "跨越辈分枷锁、终日研究‘猫步力学’的【灵魂捕手】"
+            ],
+            '狗狗': [
+                "一位在赛马场上试图教马摇尾巴的【犬系导师】",
+                "你伦理宇宙里最不安分、马力十足的【快乐能量源】",
+                "在除夕夜负责消灭所有‘不开心因果’的【尾巴特工】",
+                "一位由于辈分太远、干算直接晋升为【草原巡视员】的狗子",
+                "被宗法制误伤但依然坚持用热诚治愈你的【肉垫股东】"
+            ],
+            '鼠鼠': [
+                "一位由于存在感过于微小而进入【量子状态的隐藏亲戚】",
+                "在瓜子壳与梦境之间往返的【微型因果搬运工】",
+                "乙巳马年里最具‘反差马力’的【腮帮子储蓄员】",
+                "由于血脉浓度高度压缩而成的【毛茸茸奇点】",
+                "在族谱边缘不断试探、最终通过可爱夺权的【迷你家长】"
+            ],
+            '小鸟': [
+                "一位站在高处冷眼观察人类伦理的【羽灵观察员】",
+                "乙巳年间负责向天界传送‘新春吐槽’的【空中信使】",
+                "由于擅长飞行而自动回避了所有‘落地水逆’的【高空亲友】",
+                "一位由于嗓门响亮而被推选为【新春首席播报员】的鸟辈",
+                "在笼子/枝头构建‘私人马力能量场’的【自由之翼代理人】"
+            ]
+        };
+
+        const pseudoBlessings = [
+            "【马年温情提示】新的一年，建议多摸摸/观察它的状态。哪怕名分再荒谬，它的心跳和温度总是最真实的。",
+            "【新春算力反馈】演算显示，今年您的马力将由这位成员提供。如果它多吃了一口饭，说明您的好运正在加速超车。",
+            "【因果小贴士】在接下来的365天里，无论生活如何‘马马虎虎’，它的陪伴都是您最稳固的血脉后盾。",
+            "【避雷指南】今年不宜与该位亲戚讨论严肃的家产或学业，建议直接用零食进行物理性的‘因果结算’。"
+        ];
+
+        function runCalc() {
+            if (chain.length === 0) {
+                alert("请先定义它的位置！");
+                return;
+            }
+            const resMain = document.getElementById('target-id');
+            const resBless = document.getElementById('target-bless');
+            const resChain = document.getElementById('final-chain');
+            
+            const pool = abstractOutcomes[subject];
+            resChain.innerText = `（${subjectEmoji}${subject} 是 ${chain.join('的')}）`;
+            resMain.innerText = pool[Math.floor(Math.random() * pool.length)];
+            resBless.innerText = pseudoBlessings[Math.floor(Math.random() * pseudoBlessings.length)];
+            
+            showView('result');
+        }
+    </script>
+</body>
+</html>
+
