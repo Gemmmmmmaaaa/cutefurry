@@ -3,324 +3,546 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>乙巳马年 · 毛孩子名分演算中心</title>
+    <title>跨界设计潜能测试 | Design Potential Test</title>
     <style>
         :root {
-            --cny-red: #d62828;
-            --cny-gold: #f4a261;
-            --warm-bg: #fffcf2;
-            --text-main: #3d405b;
-            --soft-white: #ffffff;
-            --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            --bg-color: #fcfaf7;
+            --text-main: #2c2c2c;
+            --text-secondary: #666;
+            --accent-color: #d4a373;
+            --border-color: #e0dcd5;
+            --card-bg: #ffffff;
+            --transition-speed: 0.6s;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--warm-bg);
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--border-color);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Layout Sections */
+        section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--transition-speed) cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 0.2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        /* Start Screen */
+        .intro-text {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+        }
+
+        .btn-start {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            padding: 15px 40px;
+            background: var(--text-main);
+            color: #fff;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+        }
+
+        /* Question Styles */
+        .question-number {
+            font-family: serif;
+            font-style: italic;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .question-title {
+            font-size: 1.4rem;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .option-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px 25px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            font-size: 1rem;
+        }
+
+        .option-item:hover {
+            border-color: var(--accent-color);
+            background: #fffcf8;
+            padding-left: 35px;
+        }
+
+        /* Result Styles */
+        .result-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .identity-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .identity-desc {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Radar Chart Placeholder Style */
+        .chart-container {
+            margin: 40px auto;
+            width: 260px;
+            height: 260px;
             position: relative;
         }
 
-        /* Ambient Decoration */
-        .emoji-rain {
-            position: fixed;
-            top: -50px;
-            user-select: none;
-            pointer-events: none;
-            z-index: 1;
-            font-size: 24px;
-            animation: fall linear forwards;
-            opacity: 0.5;
+        .radar-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
         }
 
-        @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
+        .verdict-box {
+            margin-top: 30px;
+            text-align: center;
+            padding: 25px;
+            background: #f0ede8;
+            border-radius: 15px;
         }
 
-        /* App Container */
-        .app-card {
-            width: 90%;
-            max-width: 550px;
-            background: var(--soft-white);
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(214, 40, 40, 0.08);
-            z-index: 10;
-            position: relative;
-            border: 1px solid rgba(214, 40, 40, 0.05);
-            transition: var(--transition);
+        .verdict-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: block;
         }
 
-        .view { display: none; }
-        .view.active { display: flex; flex-direction: column; }
-
-        /* Intro View */
-        #intro-view { text-align: center; gap: 20px; }
-        .horse-icon { font-size: 3.5rem; margin-bottom: 10px; display: block; }
-        h1 { color: var(--cny-red); font-size: 1.6rem; letter-spacing: 2px; }
-        .intro-text { line-height: 1.8; color: #666; font-size: 0.95rem; margin-bottom: 20px; }
-        
-        .pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .pick-btn {
-            background: #fff; border: 2px solid #f8f8f8; border-radius: 16px;
-            padding: 15px; cursor: pointer; transition: var(--transition);
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .pick-btn:hover { border-color: var(--cny-red); transform: translateY(-5px); background: #fffaf0; }
-        .pick-btn span { font-size: 2rem; margin-bottom: 8px; }
-        .pick-btn label { font-weight: bold; color: var(--text-main); cursor: pointer; font-size: 0.9rem; }
-
-        /* Calculator View */
-        .calc-header { font-size: 0.9rem; color: #888; margin-bottom: 10px; text-align: center; }
-        .display-window {
-            min-height: 100px; background: #fdf8f5; border-radius: 16px;
-            padding: 20px; margin-bottom: 25px; display: flex; flex-wrap: wrap;
-            align-content: center; justify-content: center; gap: 6px;
-            border: 1px dashed var(--cny-gold);
-        }
-        .subject-tag { color: var(--cny-red); font-weight: bold; margin-right: 5px; font-size: 1.1rem; }
-        .node-pill {
-            background: var(--cny-red); color: #fff; padding: 4px 12px;
-            font-size: 0.85rem; border-radius: 100px; animation: pop 0.4s ease;
-        }
-        .connector { color: var(--cny-red); font-weight: bold; font-size: 0.8rem; opacity: 0.4; }
-
-        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
-        .node-btn {
-            background: #fff; border: 1px solid #f0f0f0; padding: 12px 0;
-            border-radius: 12px; font-size: 0.85rem; cursor: pointer; transition: var(--transition);
-        }
-        .node-btn:hover { border-color: var(--cny-red); color: var(--cny-red); background: #fff5f5; }
-
-        .btn-primary {
-            background: var(--cny-red); color: white; border: none; padding: 16px;
-            border-radius: 14px; font-weight: bold; font-size: 1rem; cursor: pointer;
-            box-shadow: 0 10px 20px rgba(214, 40, 40, 0.15); transition: var(--transition);
-        }
-        .btn-primary:hover { letter-spacing: 2px; filter: brightness(1.1); }
-        .btn-secondary { background: none; border: 1px solid #ddd; border-radius: 14px; cursor: pointer; color: #888; flex: 1; }
-
-        /* Result View */
-        #result-view { text-align: center; }
-        .res-label { font-size: 0.85rem; color: #999; margin-bottom: 15px; }
-        .res-chain-preview { font-size: 0.9rem; color: var(--cny-gold); margin-bottom: 25px; font-style: italic; }
-        .res-main { font-size: 1.8rem; color: var(--cny-red); font-weight: bold; margin-bottom: 30px; line-height: 1.4; }
-        .res-bless { font-size: 0.95rem; line-height: 1.8; color: #666; padding: 25px; background: #fff9f9; border-radius: 12px; margin-bottom: 30px; }
-        .warm-footer { font-size: 0.85rem; color: #aaa; margin-bottom: 20px; font-style: italic; line-height: 1.6; }
-
-        /* Glitch State */
-        .glitch-active { animation: jitter 0.05s infinite; filter: contrast(1.5) invert(0.1); }
-        @keyframes jitter { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, -1px); } }
-        #warning-overlay {
-            position: fixed; inset: 0; z-index: 1000; background: rgba(214, 40, 40, 0.98);
-            display: none; align-items: center; justify-content: center; color: white;
-            font-size: 4rem; font-weight: 900; text-align: center; padding: 20px;
+        .verdict-content {
+            font-weight: 600;
+            font-size: 1.2rem;
         }
 
-        @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .footer-action {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .btn-retry {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        /* Animation Classes */
+        .fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .question-title { font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="warning-overlay">你踏马干啥呢？</div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
 
-    <div class="app-card">
-        <!-- 1. Intro View -->
-        <div id="intro-view" class="view active">
-            <span class="horse-icon">🐎</span>
-            <h1>马年毛孩子名分演算</h1>
-            <p class="intro-text">
-                在这个奔腾的乙巳年，<br>
-                让我们为家里的毛茸茸、羽灵灵成员演算一个新春名分。<br>
-                请先选择主角：
-            </p>
-            <div class="pick-grid">
-                <div class="pick-btn" onclick="startCalc('猫猫', '🐱')">
-                    <span>🐱</span><label>猫猫</label>
-                </div>
-                <div class="pick-btn" onclick="startCalc('狗狗', '🐶')">
-                    <span>🐶</span><label>狗狗</label>
-                </div>
-                <div class="pick-btn" onclick="startCalc('鼠鼠', '🐹')">
-                    <span>🐹</span><label>鼠鼠</label>
-                </div>
-                <div class="pick-btn" onclick="startCalc('小鸟', '🐦')">
-                    <span>🐦</span><label>小鸟</label>
-                </div>
+    <div id="app">
+        <!-- Start Section -->
+        <section id="start-section" class="active">
+            <h1>设计潜能坐标</h1>
+            <p class="subtitle">Aesthetic & Logic Exploration</p>
+            <div class="intro-text">
+                <p>工业设计不是画图，而是重构世界。</p>
+                <p>15组意象选择，解析你的跨界造物基因。</p>
             </div>
-        </div>
+            <button class="btn-start" onclick="startTest()">开启探索</button>
+        </section>
 
-        <!-- 2. Calculator View -->
-        <div id="calc-view" class="view">
-            <div class="calc-header">定义它在家庭中的位置</div>
-            <div class="display-window" id="node-display"></div>
-            <div class="btn-grid">
-                <button class="node-btn" onclick="add('爷爷')">爷爷</button>
-                <button class="node-btn" onclick="add('奶奶')">奶奶</button>
-                <button class="node-btn" onclick="add('外公')">外公</button>
-                <button class="node-btn" onclick="add('外婆')">外婆</button>
-                <button class="node-btn" onclick="add('父亲')">父亲</button>
-                <button class="node-btn" onclick="add('母亲')">母亲</button>
-                <button class="node-btn" onclick="add('儿子')">儿子</button>
-                <button class="node-btn" onclick="add('女儿')">女儿</button>
-                <button class="node-btn" onclick="add('哥哥')">哥哥</button>
-                <button class="node-btn" onclick="add('姐姐')">姐姐</button>
-                <button class="node-btn" onclick="add('弟弟')">弟弟</button>
-                <button class="node-btn" onclick="add('妹妹')">妹妹</button>
+        <!-- Quiz Section -->
+        <section id="quiz-section">
+            <span class="question-number" id="qNumber">01 / 15</span>
+            <div class="question-title" id="qTitle">加载中...</div>
+            <div class="options-list" id="qOptions">
+                <!-- Options injected by JS -->
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" style="flex: 2;" onclick="runCalc()">概括名分</button>
-                <button class="btn-secondary" onclick="reset()">清空</button>
-            </div>
-        </div>
+        </section>
 
-        <!-- 3. Result View -->
-        <div id="result-view" class="view">
-            <div class="res-label">根据演算，这位特殊的成员是：</div>
-            <div class="res-chain-preview" id="final-chain"></div>
-            <div class="res-main" id="target-id"></div>
-            <div class="res-bless" id="target-bless"></div>
-            <p class="warm-footer">名分虽由算法概括，<br>但它看向你时的眼神，永远是唯一的真实。</p>
-            <button class="btn-primary" onclick="backToStart()">新的一年，请多关照</button>
-        </div>
+        <!-- Result Section -->
+        <section id="result-section">
+            <div class="result-header">
+                <p class="verdict-label">测试结果 / Result</p>
+                <div class="identity-title" id="resTitle">理性的浪漫主义者</div>
+            </div>
+            
+            <div class="chart-container" id="chartArea">
+                <svg class="radar-svg" viewBox="0 0 100 100">
+                    <!-- Background Webs -->
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#eee" stroke-width="0.5" />
+                    <circle cx="50" cy="50" r="30" fill="none" stroke="#eee" stroke-width="0.5" />
+                    <circle cx="50" cy="50" r="20" fill="none" stroke="#eee" stroke-width="0.5" />
+                    <circle cx="50" cy="50" r="10" fill="none" stroke="#eee" stroke-width="0.5" />
+                    <!-- Axis Lines -->
+                    <line x1="50" y1="10" x2="50" y2="90" stroke="#eee" stroke-width="0.5" />
+                    <line x1="10" y1="50" x2="90" y2="50" stroke="#eee" stroke-width="0.5" />
+                    <!-- Data Polygon -->
+                    <polygon id="scorePolygon" points="" fill="rgba(212, 163, 115, 0.4)" stroke="var(--accent-color)" stroke-width="1.5" />
+                </svg>
+                <!-- Labels -->
+                <div style="position:absolute; top:-25px; left:50%; transform:translateX(-50%); font-size:10px;">逻辑逻辑</div>
+                <div style="position:absolute; bottom:-25px; left:50%; transform:translateX(-50%); font-size:10px;">审美频偏</div>
+                <div style="position:absolute; right:-45px; top:50%; transform:translateY(-50%); font-size:10px;">共情锚点</div>
+                <div style="position:absolute; left:-45px; top:50%; transform:translateY(-50%); font-size:10px;">造物本能</div>
+            </div>
+
+            <div class="identity-desc" id="resDesc">
+                描述加载中...
+            </div>
+
+            <div class="verdict-box">
+                <span class="verdict-label">职业定向建议</span>
+                <div class="verdict-content" id="resVerdict">适不适合做设计？</div>
+            </div>
+
+            <div class="footer-action">
+                <button class="btn-retry" onclick="location.reload()">重新测试</button>
+            </div>
+        </section>
     </div>
 
     <script>
-        let chain = [];
-        let subject = '';
-        let subjectEmoji = '';
-        const LIMIT = 6;
-        const emojis = ['🐎', '🧧', '✨', '🐾', '🌾', '🐎', '🧨'];
-
-        function createRain() {
-            const e = document.createElement('div');
-            e.className = 'emoji-rain';
-            e.innerText = emojis[Math.floor(Math.random()*emojis.length)];
-            e.style.left = Math.random()*100 + 'vw';
-            const dur = Math.random()*3 + 4;
-            e.style.animationDuration = dur + 's';
-            document.body.appendChild(e);
-            setTimeout(()=>e.remove(), dur*1000);
-        }
-        setInterval(createRain, 500);
-
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(viewId + '-view').classList.add('active');
-        }
-
-        function startCalc(type, emoji) {
-            subject = type;
-            subjectEmoji = emoji;
-            chain = [];
-            render();
-            showView('calc');
-        }
-
-        function add(val) {
-            if (chain.length >= LIMIT) {
-                const overlay = document.getElementById('warning-overlay');
-                document.body.classList.add('glitch-active');
-                overlay.style.display = 'flex';
-                setTimeout(() => {
-                    document.body.classList.remove('glitch-active');
-                    overlay.style.display = 'none';
-                    reset();
-                }, 1200);
-                return;
+        const questions = [
+            {
+                title: "在求学期间，哪种成就感最能让你获得“心流”？",
+                options: [
+                    { text: "解开一道逻辑严丝合缝的理科难题", weight: { logic: 15 } },
+                    { text: "观察实验中生命的脉络或物质变幻", weight: { making: 15 } },
+                    { text: "捕捉一段文字背后的社会情绪与叙事", weight: { empathy: 15 } }
+                ]
+            },
+            {
+                title: "观察一个剥开一半的柚子，最先击中你的是？",
+                options: [
+                    { text: "果肉晶莹剔透的半透明质感 ✨", weight: { aesthetic: 10 } },
+                    { text: "瓣与瓣之间完美的排列几何 📐", weight: { logic: 10 } },
+                    { text: "皮与肉剥离时的治愈香气与触感 🧤", weight: { making: 10 } }
+                ]
+            },
+            {
+                title: "搬进一间空荡荡的新房间，你的第一反应是？",
+                options: [
+                    { text: "计算家具尺寸与最合理的动线布局", weight: { logic: 10 } },
+                    { text: "想象光线洒入后的氛围与色调", weight: { aesthetic: 10 } },
+                    { text: "思考如何让来访的朋友感到放松", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "雨天看到孩子打着一把过大的长柄伞，你会想到？",
+                options: [
+                    { text: "伞柄与小手之间受力不均的酸痛", weight: { empathy: 10 } },
+                    { text: "“不合比例”带来的视觉冲击力", weight: { aesthetic: 10 } },
+                    { text: "伞面撑开的张力与雨滴的振动", weight: { making: 10 } }
+                ]
+            },
+            {
+                title: "你的双手在百无聊赖时，更倾向于？",
+                options: [
+                    { text: "拆解和组装手边的小物件 🛠️", weight: { making: 10 } },
+                    { text: "在纸上涂抹整齐的几何线条 ✍️", weight: { aesthetic: 10 } },
+                    { text: "整理桌面直到它符合某种效率逻辑", weight: { logic: 10 } }
+                ]
+            },
+            {
+                title: "咖啡馆里一张因地面不平而晃动的桌子，会让你？",
+                options: [
+                    { text: "寻找纸片垫平它，无法忍受功能缺失", weight: { making: 10 } },
+                    { text: "思考其力学支点失效的结构原因", weight: { logic: 10 } },
+                    { text: "担心下一位顾客洒出咖啡的尴尬", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "身处一个完全陌生的城市街道，你如何定位方向？",
+                options: [
+                    { text: "建立经纬坐标与方位感的逻辑链接", weight: { logic: 10 } },
+                    { text: "寻找具有辨识度的地标建筑或招牌", weight: { aesthetic: 10 } },
+                    { text: "观察人流走向和某种直觉上的生活气息", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "走进一家文具店，你的手会不由自主地？",
+                options: [
+                    { text: "感受纸张的克数与摩擦的阻尼感", weight: { making: 10 } },
+                    { text: "观察陈列柜里的色彩梯度分布", weight: { aesthetic: 10 } },
+                    { text: "寻找那支写久了也不会累的笔", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "如果要你为“秩序”这个词选一种颜色，你会选？",
+                options: [
+                    { text: "极致纯净、不容侵犯的冷调白", weight: { aesthetic: 10 } },
+                    { text: "带有工业力量感的拉丝灰", weight: { logic: 10 } },
+                    { text: "温润、有生长感却克制的木纹色", weight: { making: 10 } }
+                ]
+            },
+            {
+                title: "在你眼中，数学公式或物理定律更像是？",
+                options: [
+                    { text: "宇宙中极致精简、不可改动的逻辑美", weight: { logic: 10 } },
+                    { text: "描述世界运行方式的一首抽象诗歌", weight: { aesthetic: 10 } },
+                    { text: "改造世界、提升效率的趁手工具", weight: { making: 10 } }
+                ]
+            },
+            {
+                title: "看到盲道被乱停的共享单车占领，你的念头是？",
+                options: [
+                    { text: "脑补盲人在此处受阻时的挫败", weight: { empathy: 10 } },
+                    { text: "思考公共产品投放闭环上的逻辑漏洞", weight: { logic: 10 } },
+                    { text: "想要通过某种物理设计强制改变违停", weight: { making: 10 } }
+                ]
+            },
+            {
+                title: "当你在使用一个新的软件，你最不能忍受的是？",
+                options: [
+                    { text: "界面混乱，配色挑战审美", weight: { aesthetic: 10 } },
+                    { text: "逻辑断层，想找的功能找不到", weight: { logic: 10 } },
+                    { text: "操作反直觉，不考虑肌肉记忆", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "你更享受哪种“解决问题”的瞬间？",
+                options: [
+                    { text: "推导出了一个复杂的逻辑链条", weight: { logic: 10 } },
+                    { text: "亲手做出一个被夸赞“好美”的作品", weight: { making: 10 } },
+                    { text: "一个小建议让身边的人方便了许多", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "当前的专业带给你最珍贵的礼物是？",
+                options: [
+                    { text: "绝对理性的思考习惯与严谨态度", weight: { logic: 10 } },
+                    { text: "对微观世界或宏观规律的深刻洞察", weight: { making: 10 } },
+                    { text: "对人类行为模式或社会的观察视角", weight: { empathy: 10 } }
+                ]
+            },
+            {
+                title: "如果你的设计能改变世界，你希望它是？",
+                options: [
+                    { text: "极其高效、无处不在的智慧系统", weight: { logic: 10 } },
+                    { text: "治愈人心、提升感官体验的单品", weight: { aesthetic: 10 } },
+                    { text: "极致好用、消失在日常中的工具", weight: { making: 10 } }
+                ]
             }
-            chain.push(val);
-            render();
-        }
-
-        function render() {
-            const d = document.getElementById('node-display');
-            if (chain.length === 0) {
-                d.innerHTML = `<span class="subject-tag">${subjectEmoji} ${subject}</span> <span style="color: #ccc;">它是我的...</span>`;
-                return;
-            }
-            let html = `<span class="subject-tag">${subjectEmoji} ${subject}</span> <span class="connector">是</span> `;
-            html += chain.map((n, i) => 
-                `<span class="node-pill">${n}</span>${i < chain.length - 1 ? '<span class="connector">的</span>' : ''}`
-            ).join('');
-            d.innerHTML = html;
-        }
-
-        function reset() {
-            chain = [];
-            render();
-        }
-
-        function backToStart() {
-            showView('intro');
-        }
-
-        const abstractOutcomes = {
-            '猫猫': [
-                "一位拒绝承认地心引力的【高维猫科长辈】",
-                "在草原迷宫中守护你发际线的【肉垫祭司】",
-                "由于血脉跨度过大而坍缩成的【胡须观测员】",
-                "乙巳年间唯一有权在全家福里【公然打盹的领袖】",
-                "跨越辈分枷锁、终日研究‘猫步力学’的【灵魂捕手】"
-            ],
-            '狗狗': [
-                "一位在赛马场上试图教马摇尾巴的【犬系导师】",
-                "你伦理宇宙里最不安分、马力十足的【快乐能量源】",
-                "在除夕夜负责消灭所有‘不开心因果’的【尾巴特工】",
-                "一位由于辈分太远、干算直接晋升为【草原巡视员】的狗子",
-                "被宗法制误伤但依然坚持用热诚治愈你的【肉垫股东】"
-            ],
-            '鼠鼠': [
-                "一位由于存在感过于微小而进入【量子状态的隐藏亲戚】",
-                "在瓜子壳与梦境之间往返的【微型因果搬运工】",
-                "乙巳马年里最具‘反差马力’的【腮帮子储蓄员】",
-                "由于血脉浓度高度压缩而成的【毛茸茸奇点】",
-                "在族谱边缘不断试探、最终通过可爱夺权的【迷你家长】"
-            ],
-            '小鸟': [
-                "一位站在高处冷眼观察人类伦理的【羽灵观察员】",
-                "乙巳年间负责向天界传送‘新春吐槽’的【空中信使】",
-                "由于擅长飞行而自动回避了所有‘落地水逆’的【高空亲友】",
-                "一位由于嗓门响亮而被推选为【新春首席播报员】的鸟辈",
-                "在笼子/枝头构建‘私人马力能量场’的【自由之翼代理人】"
-            ]
-        };
-
-        const pseudoBlessings = [
-            "【马年温情提示】新的一年，建议多摸摸/观察它的状态。哪怕名分再荒谬，它的心跳和温度总是最真实的。",
-            "【新春算力反馈】演算显示，今年您的马力将由这位成员提供。如果它多吃了一口饭，说明您的好运正在加速超车。",
-            "【因果小贴士】在接下来的365天里，无论生活如何‘马马虎虎’，它的陪伴都是您最稳固的血脉后盾。",
-            "【避雷指南】今年不宜与该位亲戚讨论严肃的家产或学业，建议直接用零食进行物理性的‘因果结算’。"
         ];
 
-        function runCalc() {
-            if (chain.length === 0) {
-                alert("请先定义它的位置！");
-                return;
+        let currentQuestion = 0;
+        let scores = { aesthetic: 0, logic: 0, empathy: 0, making: 0 };
+
+        function startTest() {
+            transitionSection('start-section', 'quiz-section');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('qNumber').innerText = `${String(currentQuestion + 1).padStart(2, '0')} / ${questions.length}`;
+            document.getElementById('qTitle').innerText = q.title;
+            
+            const optionsHtml = q.options.map((opt, index) => `
+                <div class="option-item" onclick="selectOption(${index})">
+                    ${opt.text}
+                </div>
+            `).join('');
+            document.getElementById('qOptions').innerHTML = optionsHtml;
+            
+            updateProgress();
+        }
+
+        function selectOption(index) {
+            const weight = questions[currentQuestion].options[index].weight;
+            for (let key in weight) {
+                scores[key] += weight[key];
             }
-            const resMain = document.getElementById('target-id');
-            const resBless = document.getElementById('target-bless');
-            const resChain = document.getElementById('final-chain');
+
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                const quizSection = document.getElementById('quiz-section');
+                quizSection.style.opacity = 0;
+                setTimeout(() => {
+                    renderQuestion();
+                    quizSection.style.opacity = 1;
+                }, 300);
+            } else {
+                showResult();
+            }
+        }
+
+        function updateProgress() {
+            const percent = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        function showResult() {
+            transitionSection('quiz-section', 'result-section');
             
-            const pool = abstractOutcomes[subject];
-            resChain.innerText = `（${subjectEmoji}${subject} 是 ${chain.join('的')}）`;
-            resMain.innerText = pool[Math.floor(Math.random() * pool.length)];
-            resBless.innerText = pseudoBlessings[Math.floor(Math.random() * pseudoBlessings.length)];
+            // Normalize scores for chart (Max possible around 100-150)
+            const maxVal = 100;
+            const normalize = (v) => Math.min(v * 1.5, 95); // Scaling for visualization
+
+            // Logic: Top axis (50, 50-v)
+            // Aesthetic: Bottom axis (50, 50+v)
+            // Empathy: Right axis (50+v, 50)
+            // Making: Left axis (50-v, 50)
             
-            showView('result');
+            const l = normalize(scores.logic);
+            const a = normalize(scores.aesthetic);
+            const e = normalize(scores.empathy);
+            const m = normalize(scores.making);
+
+            const points = `50,${50-l/2} ${50+e/2},50 50,${50+a/2} ${50-m/2},50`;
+            document.getElementById('scorePolygon').setAttribute('points', points);
+
+            // Determine Result
+            let title = "";
+            let desc = "";
+            let verdict = "";
+
+            if (scores.logic > 50 && scores.aesthetic < 20 && scores.making < 20) {
+                title = "真理的纯粹守望者";
+                desc = "设计对你而言可能过于“琐碎”且多变。你更适合在纯粹的逻辑、抽象的理论或宏大的学术框架中寻找终极答案，那是比造物更深邃的征途。";
+                verdict = "建议深耕学术研究或理论开发 🏛️";
+            } else if (scores.logic >= scores.aesthetic && scores.logic >= scores.empathy) {
+                title = "理性的浪漫主义架构师";
+                desc = "你用公式计算浪漫，在分毫不差的秩序中安放美学。你非常适合将硬核技术转化为优美的产品体验。";
+                verdict = "极度适合：工业设计/系统架构 🔧";
+            } else if (scores.aesthetic >= scores.logic && scores.empathy >= 30) {
+                title = "社会问题的审美解构者";
+                desc = "你能读懂人心的褶皱，并用视觉语言抚平它。你擅长观察细微的情绪需求，并将其转化为可见的关怀。";
+                verdict = "极度适合：体验设计/服务设计 🌸";
+            } else {
+                title = "具备极客精神的造物主";
+                desc = "所有的不便在你眼中都是设计的邀请函。你生来就要改写世界的触感，让一切运转得更丝滑。";
+                verdict = "非常适合：产品设计/交互创新 ⚙️";
+            }
+
+            document.getElementById('resTitle').innerText = title;
+            document.getElementById('resDesc').innerText = desc;
+            document.getElementById('resVerdict').innerText = verdict;
+        }
+
+        function transitionSection(outId, inId) {
+            const outEl = document.getElementById(outId);
+            const inEl = document.getElementById(inId);
+            
+            outEl.style.opacity = 0;
+            outEl.style.transform = "translateY(-20px)";
+            
+            setTimeout(() => {
+                outEl.classList.remove('active');
+                inEl.classList.add('active');
+                setTimeout(() => {
+                    inEl.style.opacity = 1;
+                    inEl.style.transform = "translateY(0)";
+                }, 50);
+            }, 600);
         }
     </script>
 </body>
 </html>
-
