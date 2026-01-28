@@ -29,6 +29,7 @@
             background-color: var(--bg);
             color: var(--text);
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         /* Mobile Progress Indicator */
@@ -112,8 +113,9 @@
             font-weight: 500;
         }
 
-        /* Buttons & Options */
+        /* Option Item & Feedback Animation */
         .option-btn {
+            position: relative;
             background: var(--paper);
             border: 1px solid var(--border);
             padding: 18px 20px;
@@ -123,16 +125,39 @@
             line-height: 1.4;
             color: var(--text);
             text-align: left;
-            transition: all 0.2s ease;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s ease, background 0.2s ease;
             display: flex;
             align-items: center;
+            overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
-        .option-btn:active {
-            background: #f9f7f2;
-            transform: scale(0.98);
+        /* Active/Selected State Animation */
+        .option-btn.selected {
             border-color: var(--accent);
+            background: #fdfaf5;
+            transform: scale(0.96);
+            color: var(--accent);
+        }
+
+        .option-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            border-radius: 16px;
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .option-btn.selected::after {
+            opacity: 0.08;
+            transform: translate(-50%, -50%) scale(1.1);
         }
 
         .start-btn {
@@ -185,7 +210,7 @@
         .radar-box {
             width: 220px;
             height: 220px;
-            margin: 0 auto 30px;
+            margin: 40px auto 40px;
             position: relative;
         }
 
@@ -198,6 +223,7 @@
             position: absolute;
             font-size: 11px;
             color: var(--text-light);
+            font-weight: 300;
         }
 
         .btn-restart {
@@ -214,6 +240,7 @@
         @media (max-height: 600px) {
             .q-title { font-size: 18px; margin-bottom: 20px; }
             .option-btn { padding: 14px 16px; margin-bottom: 10px; font-size: 15px; }
+            .radar-box { width: 180px; height: 180px; }
         }
     </style>
 </head>
@@ -233,7 +260,7 @@
             而是一种观察与重构世界的能力<br>
             你的本能中，是否潜藏着造物者的基因？
         </div>
-        <button class="start-btn" onclick="nextStep(1)">开始探索</button>
+        <button class="start-btn" onclick="nextStep(1)">开启探索</button>
     </section>
 
     <!-- Quiz -->
@@ -251,17 +278,21 @@
             <div class="identity-card">
                 <p class="identity-label">解析报告</p>
                 <div class="identity-name" id="res-name">理性的浪漫主义者</div>
+                
                 <div class="radar-box" id="radar-container">
                     <svg class="radar-svg" viewBox="0 0 100 100">
-                        <polygon id="radar-shape" points="50,20 80,50 50,80 20,50" fill="rgba(196, 164, 132, 0.3)" stroke="var(--accent)" stroke-width="1" />
-                        <line x1="50" y1="10" x2="50" y2="90" stroke="#eee" stroke-width="0.5" />
-                        <line x1="10" y1="50" x2="90" y2="50" stroke="#eee" stroke-width="0.5" />
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" stroke-width="0.5" />
+                        <circle cx="50" cy="50" r="25" fill="none" stroke="#f0f0f0" stroke-width="0.5" />
+                        <line x1="50" y1="10" x2="50" y2="90" stroke="#f0f0f0" stroke-width="0.5" />
+                        <line x1="10" y1="50" x2="90" y2="50" stroke="#f0f0f0" stroke-width="0.5" />
+                        <polygon id="radar-shape" points="50,20 80,50 50,80 20,50" fill="rgba(196, 164, 132, 0.25)" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" />
                     </svg>
-                    <span class="dimension-label" style="top:-10px; left:50%; transform:translateX(-50%);">审美</span>
-                    <span class="dimension-label" style="bottom:-10px; left:50%; transform:translateX(-50%);">逻辑</span>
-                    <span class="dimension-label" style="top:50%; right:-25px; transform:translateY(-50%);">造物</span>
-                    <span class="dimension-label" style="top:50%; left:-25px; transform:translateY(-50%);">共情</span>
+                    <span class="dimension-label" style="top:-25px; left:50%; transform:translateX(-50%);">审美敏锐</span>
+                    <span class="dimension-label" style="bottom:-25px; left:50%; transform:translateX(-50%);">逻辑骨架</span>
+                    <span class="dimension-label" style="top:50%; right:-40px; transform:translateY(-50%);">造物本能</span>
+                    <span class="dimension-label" style="top:50%; left:-40px; transform:translateY(-50%);">共情锚点</span>
                 </div>
+
                 <div class="identity-desc" id="res-desc">
                     你擅长在公式中发现美，在规则中创造诗意。
                 </div>
@@ -397,6 +428,7 @@
 
     let currentIdx = 0;
     let userScores = { aes: 0, log: 0, emp: 0, tan: 0 };
+    let isTransitioning = false;
 
     function nextStep(step) {
         document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
@@ -420,25 +452,41 @@
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerText = opt.text;
-            btn.onclick = () => selectOption(opt.scores);
+            btn.onclick = (e) => selectOption(opt.scores, btn);
             optionsContainer.appendChild(btn);
         });
 
         document.getElementById('progress-fill').style.width = `${(currentIdx / 15) * 100}%`;
     }
 
-    function selectOption(scores) {
+    function selectOption(scores, element) {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        // 1. Taptic Feedback (Haptic)
+        if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(12); // Short pulse
+        }
+
+        // 2. Visual Animation
+        element.classList.add('selected');
+
+        // 3. Score calculation
         for (let key in scores) {
             userScores[key] += scores[key];
         }
         
-        if (currentIdx < questions.length - 1) {
-            currentIdx++;
-            renderQuestion();
-        } else {
-            document.getElementById('progress-fill').style.width = `100%`;
-            nextStep(2);
-        }
+        // 4. Slight delay for the animation to be felt
+        setTimeout(() => {
+            if (currentIdx < questions.length - 1) {
+                currentIdx++;
+                renderQuestion();
+                isTransitioning = false;
+            } else {
+                document.getElementById('progress-fill').style.width = `100%`;
+                nextStep(2);
+            }
+        }, 350);
     }
 
     function calculateResult() {
@@ -447,8 +495,8 @@
         const resDesc = document.getElementById('res-desc');
         const shape = document.getElementById('radar-shape');
 
-        // Update Radar SVG
-        const scale = 0.4;
+        // Update Radar SVG (Scaled for visualization)
+        const scale = 0.22;
         const pts = [
             `50,${50 - aes * scale}`, // Top: Aesthetic
             `${50 + tan * scale},50`, // Right: Tangible
@@ -457,28 +505,28 @@
         ];
         shape.setAttribute('points', pts.join(' '));
 
-        // Logic for Archetypes
+        // Result Archetypes Logic
         let title = "";
         let desc = "";
 
-        if (log > 120 && aes < 60 && tan < 60) {
+        if (log > 140 && aes < 70 && tan < 70) {
             title = "真理的纯粹守望者";
-            desc = "【学术研究型人才】<br>你拥有极强的逻辑穿透力，但设计对你而言可能过于“感性”且琐碎。你更适合在纯粹的理论或宏大的学术框架中寻找终极答案。";
-        } else if (aes > 100 && log > 100) {
+            desc = "【学术研究型人才】<br>你拥有极其深邃的逻辑穿透力。设计对你而言可能过于“感性”或充满变数，你更适合在纯粹的理论、抽象的规律或宏大的学术框架中寻找终极答案，那是比造物更深邃的征途。";
+        } else if (aes > 110 && log > 110) {
             title = "理性的浪漫主义架构师";
-            desc = "【工业/系统设计师】<br>你用公式计算浪漫，在分毫不差的秩序中安放美学。你天生适合将复杂的硬核技术转化为优美的产品体验。";
-        } else if (emp > 100 && aes > 100) {
+            desc = "【硬核工业设计师】<br>你擅长用公式计算浪漫，在分毫不差的秩序中安放美学。你天生适合将前沿的硬核技术转化为优美的产品体验，是科技与艺术的桥梁。";
+        } else if (emp > 110 && aes > 110) {
             title = "社会问题的审美解构者";
-            desc = "【体验/服务设计师】<br>你能读懂人心的褶皱，并用视觉语言抚平它。你适合做那些温润的、以人为本的交互变革。";
-        } else if (log > 100 && tan > 100) {
+            desc = "【体验/交互设计师】<br>你能读懂人心的褶皱，并用视觉语言抚平它。所有的不便在你眼中都是设计的邀请函，你适合做那些温润的、以人为本的交互变革。";
+        } else if (log > 110 && tan > 110) {
             title = "具备极客精神的造物主";
-            desc = "【功能/结构主义设计师】<br>所有的不便在你眼中都是设计的邀请函。你生来就要改写世界的触感，让一切运转得更丝滑。";
-        } else if (tan > 100 && emp > 80) {
+            desc = "【功能/结构主义设计师】<br>你对事物的底层运行规则痴迷，且有强烈的动手欲望。你生来就要改写世界的触感，让一切运转得更丝滑、更高效。";
+        } else if (tan > 110 && emp > 90) {
             title = "生活细节的温柔缝补者";
-            desc = "【产品/交互设计师】<br>你对物质的直觉非常敏锐，且带着强烈的利他心。你的设计可能不华丽，但一定极其好用。";
+            desc = "【产品/服务设计师】<br>你对物质的直觉非常敏锐，且带着天然的同理心。你的设计或许并不华丽，但一定极其好用，能润物无声地改善日常点滴。";
         } else {
             title = "跨界设计的潜能行者";
-            desc = "【多面手设计师】<br>你尚未被特定的风格定义。目前的专业背景是你的养料，只要一点审美的火星，就能点燃你的造物本能。";
+            desc = "【多面手设计新星】<br>你尚未被特定的风格定义，各维度均衡。你目前的专业背景是极佳的土壤，只要一点审美的火星，就能点燃你隐藏的造物基因。";
         }
 
         resName.innerText = title;
